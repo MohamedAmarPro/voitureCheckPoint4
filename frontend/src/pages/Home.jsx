@@ -1,36 +1,50 @@
-import Counter from "../components/Counter";
-import logo from "../assets/logo.svg";
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import axios from "axios";
 
-export default function Home() {
+function Home() {
+  const [posts, setPosts] = useState([]);
+  const cat = useLocation().search;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await axios.get(`http://localhost:8005/posts${cat}`);
+        setPosts(res.data);
+      } catch (err) {
+        console.error(err); // Utilisez console.error() pour afficher les erreurs dans la console
+      }
+    };
+    fetchData();
+  }, [cat]);
+
+  const getText = (html) => {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    return doc.body.textContent;
+  };
+
   return (
-    <header className="App-header">
-      <img src={logo} className="App-logo" alt="logo" />
-      <p>Hello Vite + React !</p>
-
-      <Counter />
-
-      <p>
-        Edit <code>App.jsx</code> and save to test HMR updates.
-      </p>
-      <p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-        {" | "}
-        <a
-          className="App-link"
-          href="https://vitejs.dev/guide/features.html"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Vite Docs
-        </a>
-      </p>
-    </header>
+    <div className="home">
+      <div className="posts">
+        {posts &&
+          posts.map((post) => (
+            <div className="post" key={post.id}>
+              <div className="img">
+                <img src={`http://localhost:8005/uploads/${post.img}`} alt="" />
+              </div>
+              <div className="content">
+                <Link className="link" to={`/post/${post.id}`}>
+                  <h1>{post.title}</h1>
+                </Link>
+                <p>{getText(post.desc)}</p>
+                <button type="button">Read More</button>{" "}
+                {/* Ajoutez le type "button" */}
+              </div>
+            </div>
+          ))}
+      </div>
+    </div>
   );
 }
+
+export default Home;
